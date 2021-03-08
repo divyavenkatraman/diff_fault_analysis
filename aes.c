@@ -54,6 +54,8 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 #endif
 
 
+#define FAULTROW 0
+#define FAULTCOL 1
 typedef uint8_t state_t[4][4];
 
 
@@ -425,7 +427,7 @@ static void Cipher(state_t* state, const uint8_t* RoundKey, int faulty)
     if (round==(Nr-1) && faulty==1)
 	{
              uint8_t x = 1;
-             (*state)[1][1] = (*state)[1][1]^x;
+             (*state)[FAULTROW][FAULTCOL] = (*state)[FAULTROW][FAULTCOL]^x;
 
 	}
     MixColumns(state);
@@ -459,7 +461,32 @@ static void InvCipher(state_t* state, const uint8_t* RoundKey)
 
 }
 
+static void printState(state_t* state)
+{
+  for(int i = 0, i<3, i++){
+	for(int j=0, j<3,j++){
+		printf(" %i ", (*state)[i][j]);
+	}
+	printf("\n");
+}
+static int dro(int delta, int row, int column)
+  state_t* dmi;
+  (*dmi)[FAULTROW][FAULTCOL] = delta;
+  MixColumns(dmi);
+  return (dmi*)[row][column];
+}
+static int bdro(state_t* c, state_t* f, int row, int key)
+{
+	
+  uint8_t round = 0;
+  int crc = (*c)[row][FAULTCOL]^key;
+  int frc = (*f)[row][FAULTCOL]^key;
 
+  int bdro = getSBoxInvert(crc)^getSBoxInvert(frc);
+  return bdro;
+  
+
+}
 void AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* buf, int faulty)
 {
   Cipher((state_t*)buf, ctx->RoundKey, faulty);
