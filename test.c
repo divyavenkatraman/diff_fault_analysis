@@ -32,7 +32,6 @@ int main(){
 	#endif
 
     	test_encrypt_ecb_verbose(0);
-    	test_encrypt_ecb_verbose(1);
     	return 1;
 }
 

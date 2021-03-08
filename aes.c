@@ -406,7 +406,7 @@ static void InvShiftRows(state_t* state)
 }
 
 // Cipher is the main function that encrypts the PlainText.
-static void Cipher(state_t* state, const uint8_t* RoundKey, int faulty)
+static state_t* Cipher(state_t* state, const uint8_t* RoundKey, int faulty)
 {
   uint8_t round = 0;
 
@@ -435,6 +435,7 @@ static void Cipher(state_t* state, const uint8_t* RoundKey, int faulty)
   }
   // Add round key to last round
   AddRoundKey(Nr, state, RoundKey);
+  return state;
 }
 
 static void InvCipher(state_t* state, const uint8_t* RoundKey)
@@ -463,33 +464,48 @@ static void InvCipher(state_t* state, const uint8_t* RoundKey)
 
 static void printState(state_t* state)
 {
-  for(int i = 0, i<3, i++){
-	for(int j=0, j<3,j++){
+  for(int i = 0; i<3; i++){
+	for(int j=0; j<3; j++){
 		printf(" %i ", (*state)[i][j]);
 	}
 	printf("\n");
 }
-static int dro(int delta, int row, int column)
+static state_t* dro(int delta){
   state_t* dmi;
   (*dmi)[FAULTROW][FAULTCOL] = delta;
   MixColumns(dmi);
-  return (dmi*)[row][column];
+  //dro=dmo=mixcolumns(dmi)
+  return dro;
 }
+
 static int bdro(state_t* c, state_t* f, int row, int key)
 {
-	
-  uint8_t round = 0;
   int crc = (*c)[row][FAULTCOL]^key;
   int frc = (*f)[row][FAULTCOL]^key;
 
   int bdro = getSBoxInvert(crc)^getSBoxInvert(frc);
   return bdro;
-  
-
 }
 void AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* buf, int faulty)
 {
-  Cipher((state_t*)buf, ctx->RoundKey, faulty);
+  	state_t* c = Cipher((state_t*)buf, ctx->RoundKey, 0);
+  	state_t* f = Cipher((state_t*)buf, ctx->RoundKey, 1);
+	state_t* dro;
+  	for(int d = 1; d < 256; d++){
+		dro = dro(d);
+		for(i = 1; i < 4; i++){
+			printf("For subkey byte %i: \n", i);
+			int drox = (dro*)[i][FAULTCOL];
+			for(int k = 0; k < 256; k++){
+				int bdrox = bdro(c, f, i, k);
+				if(bdrox==drox){	
+					printf("delta:%i, key:%i \n",d,k);
+				}
+			}
+			printf("\n \n \n");
+		} 
+	}
+  
 }
 
 void AES_ECB_decrypt(const struct AES_ctx* ctx, uint8_t* buf)
