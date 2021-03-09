@@ -13,14 +13,14 @@
 static void phex(uint8_t* str);
 static int test_encrypt_ecb(int faulty);
 static int test_decrypt_ecb();
-static state_t* test_encrypt_ecb_verbose(int faulty);
+state_t* test_encrypt_ecb_verbose(int faulty);
 
 
 int main(){
     	int exit;
 
 	#if defined(AES256)
-    	printf("\nTesting AES256\n\n");
+   	printf("\nTesting AES256\n\n");
 	#elif defined(AES192)
     	printf("\nTesting AES192\n\n");
 	#elif defined(AES128)
@@ -29,20 +29,38 @@ int main(){
     	printf("You need to specify a symbol between AES128, AES192 or AES256. Exiting");
     	return 0;
 	#endif
+    	state_t a = malloc(sizeof(state_t));
+    	state_t b = malloc(sizeof(state_t));
+	test_encrypt_ecb_verbose(0, &a);
+	test_encrypt_ecb_verbose(1, &b);
 
-    	state_t* c = test_encrypt_ecb_verbose(0);
-	state_t* f = test_encrypt_ecb_verbose(1);
-   
+int key = 234;
+  printf("cipher \n");
+  printState(&a);
+  printf("faulty \n");
+  printState(&b);
+  printf("c0: %i", a[0][0]);
+  printf("f0: %i \n",b[0][0]);
+int crc = a[0][0]^key;
+  int frc = b[0][0]^key;
+  printf("c0_key: %i, f0_key: %i \n", crc, frc);
+
+  //int bdro = getSBoxInvert(crc)^getSBoxInvert(frc);
+  //return bdro;
+	return 1;
 	printf("\n");
 	state_t* x;
-  	for(int d = 1; d < 256; d++){
-		x = dro(d);
+  	//for(int d = 1; d < 256; d++){
+		//x = dro(d);
 		/*
 		for(int i = 0; i < 4; i++){
 		*/
-		int i = 0;
-			int drox = (*x)[FAULTROW][i];
-			printf("DRO_%i_%i: %i \n", d, i, drox);
+		//int i = 0;
+			//int drox = (*x)[FAULTROW][i];
+			//printf("DRO_%i_%i: %i \n", d, i, drox);
+			//int bdrox = bdro(c, f,0, 234);
+			//printf("BDRO_%i_%i: %i \n",234,0,bdrox);
+                        /*
 			for(int k = 0; k < 256; k++){
 				int bdrox = bdro(c, f, i, k);
 				printf("BDRO_%i_%i: %i \n", k,i,bdrox);
@@ -50,10 +68,11 @@ int main(){
 					printf("delta:%i, key:%i \n",d,k);
 				}
 			}
-			printf("\n \n \n");
-		}
-	    	printf("\n");
-	return 1;
+			*/
+			//printf("\n \n \n");
+		//}
+	    	//printf("\n");
+	//return 1;
 }
 
 
@@ -74,7 +93,8 @@ static void phex(uint8_t* str){
     	printf("\n");
 }
 
-static state_t* test_encrypt_ecb_verbose(int faulty)
+
+void test_encrypt_ecb_verbose(int faulty, state_t* buf)
 {
    	 // Example of more verbose verification
 
@@ -126,18 +146,15 @@ static state_t* test_encrypt_ecb_verbose(int faulty)
 	    printf("\n");
 
 	    // print the resulting cipher as 4 x 16 byte strings
-	    printf("normal ciphertext:\n");
 	    
 	    struct AES_ctx ctx;
 	    AES_init_ctx(&ctx, key);
 	
-	   state_t* c;
-		
 	for (i = 0; i < 4; ++i){
-	     	c = AES_ECB_encrypt(&ctx, plain_text + (i * 16), faulty);
+	     	buf = AES_ECB_encrypt(&ctx, plain_text + (i * 16), faulty);
+		printState(buf);
 	      	phex(plain_text + (i * 16));
 	}
-	return c;
 }
 
 

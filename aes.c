@@ -482,8 +482,15 @@ state_t* dro(int delta){
 
 int bdro(state_t* c, state_t* f, int col, int key)
 {
-  int crc = (*c)[FAULTROW][col]^key;
-  int frc = (*f)[FAULTROW][col]^key;
+  printf("cipher \n");
+  printState(c);
+  printf("faulty \n");
+  printState(f);
+  printf("c0: %i", (*c)[0][0]);
+  printf("f0: %i \n",(*f)[0][0]);
+int crc = (*c)[0][0]^key;
+  int frc = (*f)[0][0]^key;
+  printf("c0_key: %i, f0_key: %i \n", crc, frc);
 
   int bdro = getSBoxInvert(crc)^getSBoxInvert(frc);
   return bdro;
@@ -493,28 +500,6 @@ state_t* AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* buf, int faulty)
   	state_t* c = Cipher((state_t*)buf, ctx->RoundKey, faulty); 
 	//printState(c)
 	return c;
-/*
-  	state_t* f = Cipher((state_t*)buf, ctx->RoundKey, 1);
-	printf("fine 1");
-	state_t* x;
-  	for(int d = 1; d < 256; d++){
-		x = dro(d);
-		for(int i = 1; i < 4; i++){
-			printf("For subkey byte %i: \n", i);
-			int drox = (*x)[i][FAULTCOL];
-			for(int k = 0; k < 256; k++){
-				int bdrox = bdro(c, f, i, k);
-				if(bdrox==drox){	
-					printf("delta:%i, key:%i \n",d,k);
-				}
-			}
-			printf("\n \n \n");
-		} 
-
-  
-	
-}
-*/
  }
 
 void AES_ECB_decrypt(const struct AES_ctx* ctx, uint8_t* buf)
