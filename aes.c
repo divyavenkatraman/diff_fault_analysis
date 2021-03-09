@@ -461,8 +461,8 @@ static void InvCipher(state_t* state, const uint8_t* RoundKey)
 
 void printState(state_t* state)
 {
-  for(int i = 0; i<3; i++){
-	for(int j=0; j<3; j++){
+  for(int i = 0; i<4; i++){
+	for(int j=0; j<4; j++){
 		printf(" %i ", (*state)[i][j]);
 	}
 	printf("\n");
@@ -471,15 +471,19 @@ void printState(state_t* state)
 state_t* dro(int delta){
   state_t* dmi = malloc(sizeof(state_t));
   (*dmi)[FAULTROW][FAULTCOL] = delta;
+//  printf("DMI, delta=%i \n", delta);
+// printState(dmi);
   MixColumns(dmi);
+//  printf("DRO \n");
+// printState(dmi);
   //dro=dmo=mixcolumns(dmi)
   return dmi;
 }
 
-int bdro(state_t* c, state_t* f, int row, int key)
+int bdro(state_t* c, state_t* f, int col, int key)
 {
-  int crc = (*c)[row][FAULTCOL]^key;
-  int frc = (*f)[row][FAULTCOL]^key;
+  int crc = (*c)[FAULTROW][col]^key;
+  int frc = (*f)[FAULTROW][col]^key;
 
   int bdro = getSBoxInvert(crc)^getSBoxInvert(frc);
   return bdro;
@@ -487,10 +491,7 @@ int bdro(state_t* c, state_t* f, int row, int key)
 state_t* AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* buf, int faulty)
 {
   	state_t* c = Cipher((state_t*)buf, ctx->RoundKey, faulty); 
-	//printState(c);
-	printf("TRY DRO /n");
-	c = dro(1);
-	printState(c);
+	//printState(c)
 	return c;
 /*
   	state_t* f = Cipher((state_t*)buf, ctx->RoundKey, 1);

@@ -32,25 +32,27 @@ int main(){
 
     	state_t* c = test_encrypt_ecb_verbose(0);
 	state_t* f = test_encrypt_ecb_verbose(1);
-    	
+   
 	printf("\n");
 	state_t* x;
   	for(int d = 1; d < 256; d++){
 		x = dro(d);
-		printf("a");
-		for(int i = 1; i < 4; i++){
-			printf("For subkey byte %i: \n", i);
-			int drox = (*x)[i][FAULTCOL];
+		/*
+		for(int i = 0; i < 4; i++){
+		*/
+		int i = 0;
+			int drox = (*x)[FAULTROW][i];
+			printf("DRO_%i_%i: %i \n", d, i, drox);
 			for(int k = 0; k < 256; k++){
 				int bdrox = bdro(c, f, i, k);
+				printf("BDRO_%i_%i: %i \n", k,i,bdrox);
 				if(bdrox==drox){	
 					printf("delta:%i, key:%i \n",d,k);
 				}
 			}
 			printf("\n \n \n");
-		} 
+		}
 	    	printf("\n");
-	}
 	return 1;
 }
 
