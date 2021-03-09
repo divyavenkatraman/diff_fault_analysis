@@ -10,11 +10,10 @@
 
 #include "aes.h"
 
-
 static void phex(uint8_t* str);
 static int test_encrypt_ecb(int faulty);
 static int test_decrypt_ecb();
-static void test_encrypt_ecb_verbose(int faulty);
+static state_t* test_encrypt_ecb_verbose(int faulty);
 
 
 int main(){
@@ -31,8 +30,28 @@ int main(){
     	return 0;
 	#endif
 
-    	test_encrypt_ecb_verbose(0);
-    	return 1;
+    	state_t* c = test_encrypt_ecb_verbose(0);
+	state_t* f = test_encrypt_ecb_verbose(1);
+    	
+	printf("\n");
+	state_t* x;
+  	for(int d = 1; d < 256; d++){
+		x = dro(d);
+		printf("a");
+		for(int i = 1; i < 4; i++){
+			printf("For subkey byte %i: \n", i);
+			int drox = (*x)[i][FAULTCOL];
+			for(int k = 0; k < 256; k++){
+				int bdrox = bdro(c, f, i, k);
+				if(bdrox==drox){	
+					printf("delta:%i, key:%i \n",d,k);
+				}
+			}
+			printf("\n \n \n");
+		} 
+	    	printf("\n");
+	}
+	return 1;
 }
 
 
@@ -53,7 +72,7 @@ static void phex(uint8_t* str){
     	printf("\n");
 }
 
-static void test_encrypt_ecb_verbose(int faulty)
+static state_t* test_encrypt_ecb_verbose(int faulty)
 {
    	 // Example of more verbose verification
 
@@ -105,17 +124,18 @@ static void test_encrypt_ecb_verbose(int faulty)
 	    printf("\n");
 
 	    // print the resulting cipher as 4 x 16 byte strings
-	    printf("ciphertext:\n");
+	    printf("normal ciphertext:\n");
 	    
 	    struct AES_ctx ctx;
 	    AES_init_ctx(&ctx, key);
-
-	    for (i = 0; i < 4; ++i)
-	    {
-	      AES_ECB_encrypt(&ctx, plain_text + (i * 16), faulty);
-	      phex(plain_text + (i * 16));
-	    }
-	    printf("\n");
+	
+	   state_t* c;
+		
+	for (i = 0; i < 4; ++i){
+	     	c = AES_ECB_encrypt(&ctx, plain_text + (i * 16), faulty);
+	      	phex(plain_text + (i * 16));
+	}
+	return c;
 }
 
 

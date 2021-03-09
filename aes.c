@@ -33,7 +33,7 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 
 #include <string.h> // CBC mode, for memset
 #include "aes.h"
-
+#include "stdio.h"
 
 #define Nb 4
 
@@ -54,9 +54,6 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 #endif
 
 
-#define FAULTROW 0
-#define FAULTCOL 1
-typedef uint8_t state_t[4][4];
 
 
 static const uint8_t sbox[256] = {
@@ -462,23 +459,24 @@ static void InvCipher(state_t* state, const uint8_t* RoundKey)
 
 }
 
-static void printState(state_t* state)
+void printState(state_t* state)
 {
   for(int i = 0; i<3; i++){
 	for(int j=0; j<3; j++){
 		printf(" %i ", (*state)[i][j]);
 	}
 	printf("\n");
+	}
 }
-static state_t* dro(int delta){
-  state_t* dmi;
+state_t* dro(int delta){
+  state_t* dmi = malloc(sizeof(state_t));
   (*dmi)[FAULTROW][FAULTCOL] = delta;
   MixColumns(dmi);
   //dro=dmo=mixcolumns(dmi)
-  return dro;
+  return dmi;
 }
 
-static int bdro(state_t* c, state_t* f, int row, int key)
+int bdro(state_t* c, state_t* f, int row, int key)
 {
   int crc = (*c)[row][FAULTCOL]^key;
   int frc = (*f)[row][FAULTCOL]^key;
@@ -486,16 +484,23 @@ static int bdro(state_t* c, state_t* f, int row, int key)
   int bdro = getSBoxInvert(crc)^getSBoxInvert(frc);
   return bdro;
 }
-void AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* buf, int faulty)
+state_t* AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* buf, int faulty)
 {
-  	state_t* c = Cipher((state_t*)buf, ctx->RoundKey, 0);
+  	state_t* c = Cipher((state_t*)buf, ctx->RoundKey, faulty); 
+	//printState(c);
+	printf("TRY DRO /n");
+	c = dro(1);
+	printState(c);
+	return c;
+/*
   	state_t* f = Cipher((state_t*)buf, ctx->RoundKey, 1);
-	state_t* dro;
+	printf("fine 1");
+	state_t* x;
   	for(int d = 1; d < 256; d++){
-		dro = dro(d);
-		for(i = 1; i < 4; i++){
+		x = dro(d);
+		for(int i = 1; i < 4; i++){
 			printf("For subkey byte %i: \n", i);
-			int drox = (dro*)[i][FAULTCOL];
+			int drox = (*x)[i][FAULTCOL];
 			for(int k = 0; k < 256; k++){
 				int bdrox = bdro(c, f, i, k);
 				if(bdrox==drox){	
@@ -504,9 +509,12 @@ void AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* buf, int faulty)
 			}
 			printf("\n \n \n");
 		} 
-	}
+
   
+	
 }
+*/
+ }
 
 void AES_ECB_decrypt(const struct AES_ctx* ctx, uint8_t* buf)
 {

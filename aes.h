@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdlib.h>
+#define FAULTROW 0
+#define FAULTCOL 1
 
 // #define the macros below to 1/0 to enable/disable the mode of operation.
 //
@@ -41,6 +44,7 @@
     #define AES_keyExpSize 176
 #endif
 
+typedef uint8_t state_t[4][4];
 struct AES_ctx
 {
   uint8_t RoundKey[AES_keyExpSize];
@@ -59,9 +63,10 @@ void AES_ctx_set_iv(struct AES_ctx* ctx, const uint8_t* iv);
 // buffer size is exactly AES_BLOCKLEN bytes; 
 // you need only AES_init_ctx as IV is not used in ECB 
 // NB: ECB is considered insecure for most uses
-void AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* bufi, int faulty);
+state_t* AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* bufi, int faulty);
 void AES_ECB_decrypt(const struct AES_ctx* ctx, uint8_t* buf);
-
+state_t* dro(int delta);
+int bdro(state_t* c, state_t* f, int row, int key);
 #endif // #if defined(ECB) && (ECB == !)
 
 
@@ -89,3 +94,4 @@ void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length, int
 
 
 #endif // _AES_H_
+
