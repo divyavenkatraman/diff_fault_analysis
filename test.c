@@ -14,9 +14,12 @@ static void phex(uint8_t* str);
 static int test_encrypt_ecb(int faulty);
 static int test_decrypt_ecb();
 state_t* test_encrypt_ecb_verbose(int faulty);
-
-int* matchingPairs[256][256]; 
-int* viableDeltas[256];
+static void attackRound(int i, state_t* a, state_t*b, int** mp, int print);
+int matchingPairs1[256][256]; 
+int matchingPairs2[256][256];
+int matchingPairs3[256][256];
+int matchingPairs4[256][256];
+int viableDeltas[256];
 int main(){
     	int exit;
 
@@ -53,42 +56,51 @@ int main(){
 				{150,162,186,175}};
 	state_t* a = &normal1;
 	state_t* b = &faulty1;
-  	state_t* x;
-	for(int d = 1; d < 256; d++){
-		x = dro(d);
-		int i=0;
-			int drox = (*x)[FAULTROW][i];
-			//printf("DRO_%i_%i: %i \n", d, i, drox);
-			for(int k = 0; k < 256; k++){
-				int bdrox = bdro(a, b, i, k);
-				//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
-				if(bdrox==drox){	
-					printf("delta:%i, key:%i \n",d,k);
-					matchingPairs[d][k] = 1
-					
-				}
-			}
+	for(int i = 0; i<256; i++){
+		viableDeltas[i] = 1;
 	}
+	attackRound(0, a,b, &matchingPairs1, 0);
+	attackRound(1, a,b, &matchingPairs2, 0);
+	attackRound(2, a,b, &matchingPairs2, 0);
+	attackRound(3, a,b, &matchingPairs2, 0);
+
+
+/*
+	attackRound(1, a,b, &matchingPairs2, 1);
+	attackRound(1, a,b, &matchingPairs2, 1);
+	attackRound(1, a,b, &matchingPairs2, 1);
+	attackRound(1, a,b, &matchingPairs2, 1);
+*/
 	return 1;
 }
 
-void round(int i, state_t* a, state_t*b){
-	int* mpUpdate[256, 256];
-	int* vdUpdate[256];
-	for(int d = 1, d < 256, d++){
-		if(viableDeltas{
+static void attackRound(int i, state_t* a, state_t*b, int** mp, int print){
+	int count = 0;
+	int mpUpdate[256][256];
+	int vdUpdate[256];
+	for(int d = 1; d < 256; d++){
+		if(viableDeltas[d] == 1){
+		state_t* x = dro(d);
 		int drox = (*x)[FAULTROW][i];
 		//printf("DRO_%i_%i: %i \n", d, i, drox);
 		for(int k = 0; k < 256; k++){
 			int bdrox = bdro(a, b, i, k);
 			//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
-				if(bdrox==drox){	
-				printf("delta:%i, key:%i \n",d,k);
-				matchingPairs[d][k] = 1;
+			if(bdrox==drox){	
+				if(print) printf("delta:%i, key:%i \n",d,k);
+				mpUpdate[d][k] = 1;
+				vdUpdate[d] = 1;
+				count++;
 					
 			}
 		}
 	}
+	}
+	for(int n=0; n<256;n++){
+		viableDeltas[n] = vdUpdate[n];
+	}
+	mp = &mpUpdate;
+	printf("For round %d, found %d pairs \n.", i, count);
 }
 
 // prints string as he
