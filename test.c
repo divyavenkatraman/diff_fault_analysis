@@ -15,7 +15,8 @@ static int test_encrypt_ecb(int faulty);
 static int test_decrypt_ecb();
 state_t* test_encrypt_ecb_verbose(int faulty);
 
-
+int* matchingPairs[256][256]; 
+int* viableDeltas[256];
 int main(){
     	int exit;
 
@@ -50,7 +51,6 @@ int main(){
 				{3,185,105,49},
 				{231,133,63,90},
 				{150,162,186,175}};
-
 	state_t* a = &normal1;
 	state_t* b = &faulty1;
   	state_t* x;
@@ -64,12 +64,31 @@ int main(){
 				//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
 				if(bdrox==drox){	
 					printf("delta:%i, key:%i \n",d,k);
+					matchingPairs[d][k] = 1
+					
 				}
 			}
-			printf("\n \n \n");
-	    printf("\n");
 	}
 	return 1;
+}
+
+void round(int i, state_t* a, state_t*b){
+	int* mpUpdate[256, 256];
+	int* vdUpdate[256];
+	for(int d = 1, d < 256, d++){
+		if(viableDeltas{
+		int drox = (*x)[FAULTROW][i];
+		//printf("DRO_%i_%i: %i \n", d, i, drox);
+		for(int k = 0; k < 256; k++){
+			int bdrox = bdro(a, b, i, k);
+			//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
+				if(bdrox==drox){	
+				printf("delta:%i, key:%i \n",d,k);
+				matchingPairs[d][k] = 1;
+					
+			}
+		}
+	}
 }
 
 // prints string as he
