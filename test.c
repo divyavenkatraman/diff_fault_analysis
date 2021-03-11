@@ -14,8 +14,7 @@ static void phex(uint8_t* str);
 static int test_encrypt_ecb(int faulty);
 static int test_decrypt_ecb();
 state_t* test_encrypt_ecb_verbose(int faulty);
-state_t* normal;
-state_t* faulty;
+
 
 int main(){
     	int exit;
@@ -32,43 +31,45 @@ int main(){
 	#endif
     	//state_t b = malloc(sizeof(state_t));
 	simulate();
-//	state_t* b = test_encrypt_ecb_verbose(1);
- // printf("faulty \n");
- // printState(b);
-//  printf("c0: %i", (*a)[0][0]);
- // printf("f0: %i \n",(*b)[0][0]);
-//int crc = (*a)[0][0]^key;
- // int frc = (*b)[0][0]^key;
- // printf("c0_key: %i, f0_key: %i \n", crc, frc);
+	state_t normal1 =     {{58, 215, 123, 180},
+				{13,122,54,96},
+				{168,158,202,243},
+				{36,102,239,151}};
 
-  //int bdro = getSBoxInvert(crc)^getSBoxInvert(frc);
-  //return bdro;
-	return 1;
-	//printf("\n");
-	//state_t* x;
-  	//for(int d = 1; d < 256; d++){
-		//x = dro(d);
-		/*
-		for(int i = 0; i < 4; i++){
-		*/
-		//int i = 0;
-			//int drox = (*x)[FAULTROW][i];
+	state_t normal2 =     {{245,211,213,133},
+				{3,185,105,157},
+				{231,133,137,90},
+				{150,253,186,175}};
+
+	state_t faulty1 =     {{188, 215, 123, 180},
+				{13,122,54,14},
+				{168,158,184, 243},
+				{36,123,239,151}};
+
+	state_t faulty2 =     {{168,211,213,133},
+				{3,185,105,49},
+				{231,133,63,90},
+				{150,162,186,175}};
+
+	state_t* a = &normal1;
+	state_t* b = &faulty1;
+  	state_t* x;
+	for(int d = 1; d < 256; d++){
+		x = dro(d);
+		int i=0;
+			int drox = (*x)[FAULTROW][i];
 			//printf("DRO_%i_%i: %i \n", d, i, drox);
-			//int bdrox = bdro(c, f,0, 234);
-			//printf("BDRO_%i_%i: %i \n",234,0,bdrox);
-                        /*
 			for(int k = 0; k < 256; k++){
-				int bdrox = bdro(c, f, i, k);
-				printf("BDRO_%i_%i: %i \n", k,i,bdrox);
+				int bdrox = bdro(a, b, i, k);
+				//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
 				if(bdrox==drox){	
 					printf("delta:%i, key:%i \n",d,k);
 				}
 			}
-			*/
-			//printf("\n \n \n");
-		//}
-	    	//printf("\n");
-	//return 1;
+			printf("\n \n \n");
+	    printf("\n");
+	}
+	return 1;
 }
 
 // prints string as he
@@ -89,9 +90,8 @@ static void phex(uint8_t* str){
 }
 
 void simulate(){
-	test_encrypt_ecb_verbose(0);
-	printf("normal from sim");
-	printState(normal);
+	state_t* a = test_encrypt_ecb_verbose(0);
+	state_t* b = test_encrypt_ecb_verbose(1);
 }
 state_t* test_encrypt_ecb_verbose(int faulty)
 {
@@ -148,19 +148,25 @@ state_t* test_encrypt_ecb_verbose(int faulty)
 	    
 	    struct AES_ctx ctx;
 	    AES_init_ctx(&ctx, key);
-	state_t* buf = malloc(sizeof(state_t));	
+	state_t* c1 = malloc(sizeof(state_t));	
+	state_t* c2 = malloc(sizeof(state_t));	
+	state_t* c3 = malloc(sizeof(state_t));	
+	state_t* c4 = malloc(sizeof(state_t));	
 	for (i = 0; i < 4; ++i){
-	     	buf = AES_ECB_encrypt(&ctx, plain_text + (i * 16), faulty);
-		printState(buf);
+	     	state_t* temp = AES_ECB_encrypt(&ctx, plain_text + (i * 16), faulty);
+		if(i == 0) c1 = temp;
+		else if(i == 1) c2 = temp;
+		else if(i == 2) c3 = temp;
+		else if(i == 3) c4 = temp;
 	      //	phex(plain_text + (i * 16));
 	}
-	if(faulty == 0) normal = buf;
-	else if (faulty == 1) faulty = buf;
-	printf("buf: \n");
-	printState(buf);
-	printf("normal: \n");
-	printState(normal);
-	return buf;
+/*
+	printState(c1);
+	printState(c2);
+	printState(c3);
+	printState(c4);
+*/
+	return c1;
 }
 
 

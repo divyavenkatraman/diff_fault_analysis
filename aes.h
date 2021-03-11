@@ -94,4 +94,3 @@ void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length, int
 
 
 #endif // _AES_H_
-
