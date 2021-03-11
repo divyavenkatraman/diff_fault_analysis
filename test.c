@@ -29,27 +29,25 @@ int main(){
     	printf("You need to specify a symbol between AES128, AES192 or AES256. Exiting");
     	return 0;
 	#endif
-    	state_t a = malloc(sizeof(state_t));
-    	state_t b = malloc(sizeof(state_t));
-	test_encrypt_ecb_verbose(0, &a);
-	test_encrypt_ecb_verbose(1, &b);
-
+    	//state_t b = malloc(sizeof(state_t));
+	state_t* a = test_encrypt_ecb_verbose(0);
+//	state_t* b = test_encrypt_ecb_verbose(1);
 int key = 234;
   printf("cipher \n");
-  printState(&a);
-  printf("faulty \n");
-  printState(&b);
-  printf("c0: %i", a[0][0]);
-  printf("f0: %i \n",b[0][0]);
-int crc = a[0][0]^key;
-  int frc = b[0][0]^key;
-  printf("c0_key: %i, f0_key: %i \n", crc, frc);
+  printState(a);
+ // printf("faulty \n");
+ // printState(b);
+//  printf("c0: %i", (*a)[0][0]);
+ // printf("f0: %i \n",(*b)[0][0]);
+//int crc = (*a)[0][0]^key;
+ // int frc = (*b)[0][0]^key;
+ // printf("c0_key: %i, f0_key: %i \n", crc, frc);
 
   //int bdro = getSBoxInvert(crc)^getSBoxInvert(frc);
   //return bdro;
 	return 1;
-	printf("\n");
-	state_t* x;
+	//printf("\n");
+	//state_t* x;
   	//for(int d = 1; d < 256; d++){
 		//x = dro(d);
 		/*
@@ -75,7 +73,6 @@ int crc = a[0][0]^key;
 	//return 1;
 }
 
-
 // prints string as he
 static void phex(uint8_t* str){
 
@@ -94,7 +91,7 @@ static void phex(uint8_t* str){
 }
 
 
-void test_encrypt_ecb_verbose(int faulty, state_t* buf)
+state_t* test_encrypt_ecb_verbose(int faulty)
 {
    	 // Example of more verbose verification
 
@@ -132,7 +129,7 @@ void test_encrypt_ecb_verbose(int faulty, state_t* buf)
 		(uint8_t) 0x2b, (uint8_t) 0x41, (uint8_t) 0x7b, 
 		(uint8_t) 0xe6, (uint8_t) 0x6c, (uint8_t) 0x37, 
 		(uint8_t) 0x10 };
-
+	/*
 	    // print text to encrypt, key and IV
 	    printf("ECB encrypt verbose:\n\n");
 	    printf("plain text:\n");
@@ -144,17 +141,18 @@ void test_encrypt_ecb_verbose(int faulty, state_t* buf)
 	    printf("key:\n");
 	    phex(key);
 	    printf("\n");
-
+*/
 	    // print the resulting cipher as 4 x 16 byte strings
 	    
 	    struct AES_ctx ctx;
 	    AES_init_ctx(&ctx, key);
-	
+	state_t* buf = malloc(sizeof(state_t));	
 	for (i = 0; i < 4; ++i){
 	     	buf = AES_ECB_encrypt(&ctx, plain_text + (i * 16), faulty);
 		printState(buf);
 	      	phex(plain_text + (i * 16));
 	}
+	return buf;
 }
 
 
