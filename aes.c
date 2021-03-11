@@ -498,7 +498,7 @@ int crc = (*c)[0][0]^key;
 state_t* AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* buf, int faulty)
 {
   	state_t* c = Cipher((state_t*)buf, ctx->RoundKey, faulty); 
-	//printState(c)
+	//printState(c);
 	return c;
  }
 

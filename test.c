@@ -14,7 +14,8 @@ static void phex(uint8_t* str);
 static int test_encrypt_ecb(int faulty);
 static int test_decrypt_ecb();
 state_t* test_encrypt_ecb_verbose(int faulty);
-
+state_t* normal;
+state_t* faulty;
 
 int main(){
     	int exit;
@@ -30,11 +31,8 @@ int main(){
     	return 0;
 	#endif
     	//state_t b = malloc(sizeof(state_t));
-	state_t* a = test_encrypt_ecb_verbose(0);
+	simulate();
 //	state_t* b = test_encrypt_ecb_verbose(1);
-int key = 234;
-  printf("cipher \n");
-  printState(a);
  // printf("faulty \n");
  // printState(b);
 //  printf("c0: %i", (*a)[0][0]);
@@ -90,7 +88,11 @@ static void phex(uint8_t* str){
     	printf("\n");
 }
 
-
+void simulate(){
+	test_encrypt_ecb_verbose(0);
+	printf("normal from sim");
+	printState(normal);
+}
 state_t* test_encrypt_ecb_verbose(int faulty)
 {
    	 // Example of more verbose verification
@@ -150,8 +152,14 @@ state_t* test_encrypt_ecb_verbose(int faulty)
 	for (i = 0; i < 4; ++i){
 	     	buf = AES_ECB_encrypt(&ctx, plain_text + (i * 16), faulty);
 		printState(buf);
-	      	phex(plain_text + (i * 16));
+	      //	phex(plain_text + (i * 16));
 	}
+	if(faulty == 0) normal = buf;
+	else if (faulty == 1) faulty = buf;
+	printf("buf: \n");
+	printState(buf);
+	printf("normal: \n");
+	printState(normal);
 	return buf;
 }
 
