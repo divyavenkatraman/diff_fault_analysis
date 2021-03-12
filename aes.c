@@ -475,8 +475,8 @@ state_t* dro(int delta){
 //  printf("DMI, delta=%i \n", delta);
 // printState(dmi);
   MixColumns(dmi);
-  printf("DRO \n");
-   printState(dmi);
+ // printf("DRO \n");
+//   printState(dmi);
   //dro=dmo=mixcolumns(dmi)
   return dmi;
 }

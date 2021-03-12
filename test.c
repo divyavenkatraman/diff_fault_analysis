@@ -61,24 +61,25 @@ int main(){
 	for(int i = 0; i<256; i++){
 		viableDeltas[i] = 1;
 	}
-	attackRound(0, a,b, &matchingPairs1, 1);
-/*
+	attackRound(0, a,b, &matchingPairs1, 0);
 	attackRound(1, a,b, &matchingPairs2, 0);
 	attackRound(2, a,b, &matchingPairs2, 0);
 	attackRound(3, a,b, &matchingPairs2, 0);
 
-	attackRound(1, a,b, &matchingPairs2, 1);
-	attackRound(1, a,b, &matchingPairs2, 1);
-	attackRound(1, a,b, &matchingPairs2, 1);
-	attackRound(1, a,b, &matchingPairs2, 1);
-*/
+	a = &normal2;
+	b = &faulty2;
+	attackRound(0, a,b, &matchingPairs2, 0);
+	attackRound(1, a,b, &matchingPairs2, 0);
+	attackRound(2, a,b, &matchingPairs2, 0);
+	attackRound(3, a,b, &matchingPairs2, 0);
+
 	return 1;
 }
 
 static void attackRound(int i, state_t* a, state_t*b, int** mp, int print){
 	int count = 0;
-	int mpUpdate[256][256];
-	int vdUpdate[256]; 
+	int mpUpdate[256][256] = {0};
+	int vdUpdate[256] = {0}; 
 	int affectedRow = 0;
 
 	for(affectedRow = 0; affectedRow < 4; affectedRow++){
@@ -95,10 +96,10 @@ static void attackRound(int i, state_t* a, state_t*b, int** mp, int print){
 		int drox = (*x)[0][i];
 		//printf("DRO_%i_%i: %i \n", d, i, drox);
 		for(int k = 0; k < 256; k++){
-			int bdrox = bdro(a, b, affectedRow, i, k);
+			int bdrox = bdro(a, b, affectedRow,i, k);
 			//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
 			if(bdrox==drox){	
-				if(print) printf("delta:%i, drox: %d,  key:%i, bdrox: %d \n",d,drox, k, bdrox);
+			if(print) printf("delta:%i, key:%i, dro=bdro=%i \n",d, k, bdrox);
 				mpUpdate[d][k] = 1;
 				vdUpdate[d] = 1;
 				count++;
