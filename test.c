@@ -13,13 +13,14 @@
 static void phex(uint8_t* str);
 static int test_encrypt_ecb(int faulty);
 static int test_decrypt_ecb();
-state_t* test_encrypt_ecb_verbose(int faulty);
+static void test_encrypt_ecb_verbose(int faulty);
 static void attackRound(int i, state_t* a, state_t*b, int** mp, int print);
 int matchingPairs1[256][256]; 
 int matchingPairs2[256][256];
 int matchingPairs3[256][256];
 int matchingPairs4[256][256];
 int viableDeltas[256];
+state_t* n;
 int main(){
     	int exit;
 
@@ -35,6 +36,7 @@ int main(){
 	#endif
     	//state_t b = malloc(sizeof(state_t));
 	simulate();
+/*
 	state_t normal1 =     {{58, 215, 123, 180},
 				{13,122,54,96},
 				{168,158,202,243},
@@ -59,13 +61,12 @@ int main(){
 	for(int i = 0; i<256; i++){
 		viableDeltas[i] = 1;
 	}
-	attackRound(0, a,b, &matchingPairs1, 0);
+	attackRoundi(0, a,b, &matchingPairs1, 0);
 	attackRound(1, a,b, &matchingPairs2, 0);
 	attackRound(2, a,b, &matchingPairs2, 0);
 	attackRound(3, a,b, &matchingPairs2, 0);
 
 
-/*
 	attackRound(1, a,b, &matchingPairs2, 1);
 	attackRound(1, a,b, &matchingPairs2, 1);
 	attackRound(1, a,b, &matchingPairs2, 1);
@@ -74,6 +75,7 @@ int main(){
 	return 1;
 }
 
+int findAffected 
 static void attackRound(int i, state_t* a, state_t*b, int** mp, int print){
 	int count = 0;
 	int mpUpdate[256][256];
@@ -84,7 +86,7 @@ static void attackRound(int i, state_t* a, state_t*b, int** mp, int print){
 		int drox = (*x)[FAULTROW][i];
 		//printf("DRO_%i_%i: %i \n", d, i, drox);
 		for(int k = 0; k < 256; k++){
-			int bdrox = bdro(a, b, i, k);
+			int bdrox = bdro(a, b, r, c, k);
 			//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
 			if(bdrox==drox){	
 				if(print) printf("delta:%i, key:%i \n",d,k);
@@ -121,10 +123,12 @@ static void phex(uint8_t* str){
 }
 
 void simulate(){
-	state_t* a = test_encrypt_ecb_verbose(0);
-	state_t* b = test_encrypt_ecb_verbose(1);
+	test_encrypt_ecb_verbose(0);
+	printf("work \n");
+	printState(n);
+	//state_t* b = test_encrypt_ecb_verbose(1);
 }
-state_t* test_encrypt_ecb_verbose(int faulty)
+static void test_encrypt_ecb_verbose(int faulty)
 {
    	 // Example of more verbose verification
 
@@ -183,6 +187,7 @@ state_t* test_encrypt_ecb_verbose(int faulty)
 	state_t* c2 = malloc(sizeof(state_t));	
 	state_t* c3 = malloc(sizeof(state_t));	
 	state_t* c4 = malloc(sizeof(state_t));	
+	n = malloc(sizeof(state_t));	
 	for (i = 0; i < 4; ++i){
 	     	state_t* temp = AES_ECB_encrypt(&ctx, plain_text + (i * 16), faulty);
 		if(i == 0) c1 = temp;
@@ -191,13 +196,24 @@ state_t* test_encrypt_ecb_verbose(int faulty)
 		else if(i == 3) c4 = temp;
 	      //	phex(plain_text + (i * 16));
 	}
-/*
+	printf("c1 \n");
 	printState(c1);
-	printState(c2);
+/*	printState(c2);
 	printState(c3);
 	printState(c4);
 */
-	return c1;
+
+	for(int p = 0; p<4; p++){
+		for(int q = 0; q<4; q++){
+			(*n)[p][q] = (*c1)[p][q];
+		}
+	 }
+		
+	printf("n \n");
+	printState(n);
+
+	printf("return \n");
+	return;
 }
 
 

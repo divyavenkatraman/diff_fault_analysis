@@ -491,8 +491,8 @@ int bdro(state_t* c, state_t* f, int col, int key)
   printf("c0: %i", (*c)[0][0]);
   printf("f0: %i \n",(*f)[0][0]);
 */
-  int crc = (*c)[0][0]^key;
-  int frc = (*f)[0][0]^key;
+  int crc = (*c)[r][c]^key;
+  int frc = (*f)[r][c]^key;
  /* printf("c0_key: %i, f0_key: %i \n", crc, frc);*/
 
   int bdro = getSBoxInvert(crc)^getSBoxInvert(frc);
