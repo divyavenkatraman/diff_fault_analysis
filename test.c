@@ -237,7 +237,7 @@ static void attackRound(int i, state_t* a, state_t*b, int mp[256][256], int prin
 			int drox = (*x)[0][i];
 			//printf("DRO_%i_%i: %i \n", d, i, drox);
 			for(int k = 0; k < 256; k++){
-				int bdrox = bdro(a, b, affectedRow,i, k);
+				int bdrox = bdro(nVal, fVal, k);
 				//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
 					if(bdrox==drox){	
 						if(print) 
