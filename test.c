@@ -13,136 +13,35 @@
 static void phex(uint8_t* str);
 static int test_encrypt_ecb(int faulty);
 static int test_decrypt_ecb();
-static void test_encrypt_ecb_verbose(int faulty);
 static void attackRound(int i, state_t* a, state_t*b, int** mp, int print);
 int matchingPairs1[256][256]; 
 int matchingPairs2[256][256];
 int matchingPairs3[256][256];
 int matchingPairs4[256][256];
 int viableDeltas[256];
-state_t* n;
-int main(){
-    	int exit;
+state_t* n1;
+state_t* n2;
+state_t* n3;
+state_t* n4;
 
-	#if defined(AES256)
-   	printf("\nTesting AES256\n\n");
-	#elif defined(AES192)
-    	printf("\nTesting AES192\n\n");
-	#elif defined(AES128)
-	printf("\nTesting AES128\n\n");
-	#else
-    	printf("You need to specify a symbol between AES128, AES192 or AES256. Exiting");
-    	return 0;
-	#endif
-    	//state_t b = malloc(sizeof(state_t));
-	simulate();
+state_t* f1;
+state_t* f2;
+state_t* f3;
+state_t* f4;
 
-	state_t normal1 =     {{58, 215, 123, 180},
-				{13,122,54,96},
-				{168,158,202,243},
-				{36,102,239,151}};
+void simulate(){	
+	test_encrypt_ecb_verbose(0,0,n1);
+	test_encrypt_ecb_verbose(0,1,n2);
+	test_encrypt_ecb_verbose(0,2,n3);
+	test_encrypt_ecb_verbose(0,3,n4);
 
-	state_t normal2 =     {{245,211,213,133},
-				{3,185,105,157},
-				{231,133,137,90},
-				{150,253,186,175}};
-
-	state_t faulty1 =     {{188, 215, 123, 180},
-				{13,122,54,14},
-				{168,158,184, 243},
-				{36,123,239,151}};
-
-	state_t faulty2 =     {{168,211,213,133},
-				{3,185,105,49},
-				{231,133,63,90},
-				{150,162,186,175}};
-	state_t* a = &normal1;
-	state_t* b = &faulty1;
-	for(int i = 0; i<256; i++){
-		viableDeltas[i] = 1;
-	}
-	attackRound(0, a,b, &matchingPairs1, 0);
-	attackRound(1, a,b, &matchingPairs2, 0);
-	attackRound(2, a,b, &matchingPairs2, 0);
-	attackRound(3, a,b, &matchingPairs2, 0);
-
-	a = &normal2;
-	b = &faulty2;
-	attackRound(0, a,b, &matchingPairs2, 0);
-	attackRound(1, a,b, &matchingPairs2, 0);
-	attackRound(2, a,b, &matchingPairs2, 0);
-	attackRound(3, a,b, &matchingPairs2, 0);
-
-	return 1;
+	test_encrypt_ecb_verbose(1,0,f1);
+	test_encrypt_ecb_verbose(1,1,f2);
+	test_encrypt_ecb_verbose(1,2,f3);
+	test_encrypt_ecb_verbose(1,3,f4);
 }
-
-static void attackRound(int i, state_t* a, state_t*b, int** mp, int print){
-	int count = 0;
-	int mpUpdate[256][256] = {0};
-	int vdUpdate[256] = {0}; 
-	int affectedRow = 0;
-
-	for(affectedRow = 0; affectedRow < 4; affectedRow++){
-		if ((*a)[affectedRow][i] != (*b)[affectedRow][i]){
-			break;
-		}
-	}
-	int nVal =  (*a)[affectedRow][i]; 
-	int fVal =  (*b)[affectedRow][i]; 
-	printf("Normal val: %d, Faulty Val: %d", nVal, fVal);
-	for(int d = 1; d < 256; d++){
-		if(viableDeltas[d] == 1){
-		state_t* x = dro(d);
-		int drox = (*x)[0][i];
-		//printf("DRO_%i_%i: %i \n", d, i, drox);
-		for(int k = 0; k < 256; k++){
-			int bdrox = bdro(a, b, affectedRow,i, k);
-			//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
-			if(bdrox==drox){	
-			if(print) printf("delta:%i, key:%i, dro=bdro=%i \n",d, k, bdrox);
-				mpUpdate[d][k] = 1;
-				vdUpdate[d] = 1;
-				count++;
-					
-			}
-		}
-	}
-	}
-	for(int n=0; n<256;n++){
-		viableDeltas[n] = vdUpdate[n];
-	}
-	mp = &mpUpdate;
-	printf("For round %d, found %d pairs \n.", i, count);
-}
-
-// prints string as he
-static void phex(uint8_t* str){
-
-	#if defined(AES256)
-    	uint8_t len = 32;
-	#elif defined(AES192)
-    	uint8_t len = 24;
-	#elif defined(AES128)
-    	uint8_t len = 16;
-	#endif
-
-    	unsigned char i;
-    	for (i = 0; i < len; ++i)
-        	printf("%.2x ", str[i]);
-    	printf("\n");
-}
-
-void simulate(){
-	test_encrypt_ecb_verbose(0);
-	printf("work \n");
-	printState(n);
-	//state_t* b = test_encrypt_ecb_verbose(1);
-}
-static void test_encrypt_ecb_verbose(int faulty)
-{
-   	 // Example of more verbose verification
-
-    	uint8_t i;
+void test_encrypt_ecb_verbose(int faulty, int which, state_t* c)
+{ 
 
     	// 128bit key
     	uint8_t key[16] = { 
@@ -191,41 +90,156 @@ static void test_encrypt_ecb_verbose(int faulty)
 */
 	    // print the resulting cipher as 4 x 16 byte strings
 	    
-	    struct AES_ctx ctx;
-	    AES_init_ctx(&ctx, key);
-	state_t* c1 = malloc(sizeof(state_t));	
-	state_t* c2 = malloc(sizeof(state_t));	
-	state_t* c3 = malloc(sizeof(state_t));	
-	state_t* c4 = malloc(sizeof(state_t));	
-	n = malloc(sizeof(state_t));	
-	for (i = 0; i < 4; ++i){
-	     	state_t* temp = AES_ECB_encrypt(&ctx, plain_text + (i * 16), faulty);
-		if(i == 0) c1 = temp;
-		else if(i == 1) c2 = temp;
-		else if(i == 2) c3 = temp;
-		else if(i == 3) c4 = temp;
-	      //	phex(plain_text + (i * 16));
-	}
-	printf("c1 \n");
-	printState(c1);
-/*	printState(c2);
-	printState(c3);
-	printState(c4);
-*/
-
-	for(int p = 0; p<4; p++){
-		for(int q = 0; q<4; q++){
-			(*n)[p][q] = (*c1)[p][q];
+ 	state_t* x = malloc(sizeof(state_t));	
+	struct AES_ctx ctx;
+	AES_init_ctx(&ctx, key);
+	x = AES_ECB_encrypt(&ctx, plain_text + (which * 16), faulty);
+//	printState(x);
+	for (int i = 0; i < 4; i++){
+ 		for (int j = 0; j<4; j++){	
+			(*c)[i][j] = (*x)[i][j];
 		}
-	 }
-		
-	printf("n \n");
-	printState(n);
-
-	printf("return \n");
+	}
 	return;
 }
 
+int main(){
+    	int exit;
+
+	#if defined(AES256)
+   	printf("\nTesting AES256\n\n");
+	#elif defined(AES192)
+    	printf("\nTesting AES192\n\n");
+	#elif defined(AES128)
+	printf("\nTesting AES128\n\n");
+	#else
+    	printf("You need to specify a symbol between AES128, AES192 or AES256. Exiting");
+    	return 0;
+	#endif
+    	//state_t b = malloc(sizeof(state_t));
+
+	n1 = malloc(sizeof(state_t));	
+	n2 = malloc(sizeof(state_t));	
+	n3 = malloc(sizeof(state_t));	
+	n4 = malloc(sizeof(state_t));	
+	
+	f1 = malloc(sizeof(state_t));	
+	f2 = malloc(sizeof(state_t));	
+	f3 = malloc(sizeof(state_t));	
+	f4 = malloc(sizeof(state_t));	
+	simulate();
+	printState(n1);
+	printState(n2);
+	printState(n3);
+	printState(n4);
+
+	printState(f1);
+	printState(f2);
+	printState(f3);
+	printState(f4);
+/*
+	state_t normal1 =     {{58, 215, 123, 180},
+				{13,122,54,96},
+				{168,158,202,243},
+				{36,102,239,151}};
+
+	state_t normal2 =     {{245,211,213,133},
+				{3,185,105,157},
+				{231,133,137,90},
+				{150,253,186,175}};
+
+	state_t faulty1 =     {{188, 215, 123, 180},
+				{13,122,54,14},
+				{168,158,184, 243},
+				{36,123,239,151}};
+
+	state_t faulty2 =     {{168,211,213,133},
+				{3,185,105,49},
+				{231,133,63,90},
+				{150,162,186,175}};
+*/
+	state_t* a = n1;
+	state_t* b = f1;
+	for(int i = 0; i<256; i++){
+		viableDeltas[i] = 1;
+	}
+	attackRound(0, a,b, &matchingPairs1, 0);
+	attackRound(1, a,b, &matchingPairs2, 0);
+	attackRound(2, a,b, &matchingPairs2, 0);
+	attackRound(3, a,b, &matchingPairs2, 0);
+
+	a = n2;
+	b = f2;
+	attackRound(0, a,b, &matchingPairs2, 0);
+	attackRound(1, a,b, &matchingPairs2, 0);
+	attackRound(2, a,b, &matchingPairs2, 0);
+	attackRound(3, a,b, &matchingPairs2, 0);
+
+	a=n3;
+	b=f3;
+	attackRound(0, a,b, &matchingPairs3, 0);
+	attackRound(1, a,b, &matchingPairs3, 0);
+	attackRound(2, a,b, &matchingPairs3, 0);
+	attackRound(3, a,b, &matchingPairs3, 0);
+	return 1;
+}
+
+static void attackRound(int i, state_t* a, state_t*b, int** mp, int print){
+	int count = 0;
+	int mpUpdate[256][256] = {0};
+	int vdUpdate[256] = {0}; 
+	int affectedRow = 0;
+
+	for(affectedRow = 0; affectedRow < 4; affectedRow++){
+		if ((*a)[affectedRow][i] != (*b)[affectedRow][i]){
+			break;
+		}
+	}
+	int nVal =  (*a)[affectedRow][i]; 
+	int fVal =  (*b)[affectedRow][i]; 
+	printf("Normal val: %d, Faulty Val: %d \n", nVal, fVal);
+	for(int d = 1; d < 256; d++){
+		if(viableDeltas[d] == 1){
+		state_t* x = dro(d);
+		int drox = (*x)[0][i];
+		//printf("DRO_%i_%i: %i \n", d, i, drox);
+		for(int k = 0; k < 256; k++){
+			int bdrox = bdro(a, b, affectedRow,i, k);
+			//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
+			if(bdrox==drox){	
+				if(print) 
+				printf("\n delta:%i, key:%i, dro=bdro=%i \n",d, k, bdrox);
+				mpUpdate[d][k] = 1;
+				vdUpdate[d] = 1;
+				count++;
+					
+			}
+		}
+	}
+	}
+	for(int n=0; n<256;n++){
+		viableDeltas[n] = vdUpdate[n];
+	}
+	mp = &mpUpdate;
+	printf("For round %d, found %d pairs \n.", i, count);
+}
+
+// prints string as he
+static void phex(uint8_t* str){
+
+	#if defined(AES256)
+    	uint8_t len = 32;
+	#elif defined(AES192)
+    	uint8_t len = 24;
+	#elif defined(AES128)
+    	uint8_t len = 16;
+	#endif
+
+    	unsigned char i;
+    	for (i = 0; i < len; ++i)
+        	printf("%.2x ", str[i]);
+    	printf("\n");
+}
 
 static int test_encrypt_ecb(int faulty)
 {
