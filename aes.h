@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #define FAULTROW 0
 #define FAULTCOL 1
-
+#define CORRECT_DELTA 20
 // #define the macros below to 1/0 to enable/disable the mode of operation.
 //
 // CBC enables AES encryption in CBC-mode of operation.
@@ -66,7 +66,7 @@ void AES_ctx_set_iv(struct AES_ctx* ctx, const uint8_t* iv);
 state_t* AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* bufi, int faulty);
 void AES_ECB_decrypt(const struct AES_ctx* ctx, uint8_t* buf);
 state_t* dro(int delta);
-int bdro(state_t* c, state_t* f, int row, int col, int key);
+int bdro(int cVal, int fVal, int key);
 #endif // #if defined(ECB) && (ECB == !)
 
 

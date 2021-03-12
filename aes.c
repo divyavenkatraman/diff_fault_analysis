@@ -423,7 +423,7 @@ static state_t* Cipher(state_t* state, const uint8_t* RoundKey, int faulty)
     }
     if (round==(Nr-1) && faulty==1)
 	{
-             uint8_t x = 1;
+             uint8_t x = CORRECT_DELTA;
              (*state)[FAULTROW][FAULTCOL] = (*state)[FAULTROW][FAULTCOL]^x;
 
 	}
@@ -481,19 +481,8 @@ state_t* dro(int delta){
   return dmi;
 }
 
-int bdro(state_t* c, state_t* f, int row, int col, int key)
+int bdro(int cval, int fval, int key)
 {
-/*
-  printf("cipher \n");
-  printState(c);
-  printf("faulty \n");
-  printState(f);
-  printf("c0: %i", (*c)[0][0]);
-  printf("f0: %i \n",(*f)[0][0]);
-*/ 
-  int cval=  (*c)[row][col];
-  int fval=  (*f)[row][col];
- // printf("BDRO on Row %d, Col%d, nval %d, fval%d  \n", r,col,cval, fval);
   int crc = cval^key;
   int frc = fval^key;
  /* printf("c0_key: %i, f0_key: %i \n", crc, frc);*/

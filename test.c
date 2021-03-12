@@ -30,23 +30,44 @@ state_t* f2;
 state_t* f3;
 state_t* f4;
 
-void collectKey(int delta){
+void collectKey(int delta, int RoundsRequired){
+	int numPossibleKeys0 = 0;
+	int numPossibleKeys1 = 0;
+	int numPossibleKeys2 = 0;
+	int numPossibleKeys3 = 0;
+
 	int key[4] = {0};
 	for(int i = 0; i<256; i++){
-		if (matchingPairs1[delta][i] == 1) 
+		if (matchingPairs1[delta][i] == 1){ 
 			key[0] = i;
-		if (matchingPairs2[delta][i] == 1)
-			key[1] = i; 
-		if (matchingPairs3[delta][i] == 1) 
+			numPossibleKeys0++;
+		}
+		if (matchingPairs2[delta][i] == 1){
+			key[1] = i;
+			numPossibleKeys1++;
+		}
+		if (matchingPairs3[delta][i] == 1){ 
 			key[2] = i;
-		if (matchingPairs4[delta][i] == 1) 
+			numPossibleKeys2++;
+		}
+		if (matchingPairs4[delta][i] == 1){
 			key[3] = i;
-		if (matchingPairs4[delta][i] == 1) 
-			key[5] = i;
-		
+			numPossibleKeys3++;
+		}
 	}
-	for (int i=0; i<4; i++){
-		printf("i: %d, h: %x \n", key[i], key[i]);
+
+	printf(" \n \n \n Checking that, for each key byte, there is only one key for the corrct delta that is found in all rounds.... \n \n");
+	if ((numPossibleKeys0 !=1) ||
+		(numPossibleKeys1 !=1) ||
+		(numPossibleKeys2 !=1) || 
+		(numPossibleKeys3 !=1)){
+		printf("Error. One or more key bytes does not have a unique and ubiquitous result.\n");
+	}
+	else{
+		printf("Congrats! All key bytes have a unique and ubiquitous result \n");
+		for (int i=0; i<4; i++){
+			printf("k%d: %d, h: %x \n", i, key[i], key[i]);
+		}
 	}
 
 }
@@ -156,63 +177,83 @@ int main(){
 	f2 = malloc(sizeof(state_t));	
 	f3 = malloc(sizeof(state_t));	
 	f4 = malloc(sizeof(state_t));	
+	printf("Running simulation....\n");
+
+
 	simulate();
+	printf("Normal ciphertexts: \n");
 	printState(n1);
 	printState(n2);
 	printState(n3);
 	printState(n4);
 
+	printf("Faulty ciphertexts : \n");
 	printState(f1);
 	printState(f2);
 	printState(f3);
 	printState(f4);
-/*
-	state_t normal1 =     {{58, 215, 123, 180},
-				{13,122,54,96},
-				{168,158,202,243},
-				{36,102,239,151}};
 
-	state_t normal2 =     {{245,211,213,133},
-				{3,185,105,157},
-				{231,133,137,90},
-				{150,253,186,175}};
-
-	state_t faulty1 =     {{188, 215, 123, 180},
-				{13,122,54,14},
-				{168,158,184, 243},
-				{36,123,239,151}};
-
-	state_t faulty2 =     {{168,211,213,133},
-				{3,185,105,49},
-				{231,133,63,90},
-				{150,162,186,175}};
-*/
+	printf("\n \n \n Performing analysis.... \n"); 
 	state_t* a = n1;
 	state_t* b = f1;
 	for(int i = 0; i<256; i++){
 		viableDeltas[i] = 1;
+		for(int q=0; q<256;q++){
+			matchingPairs1[i][q] =  1; 
+			matchingPairs2[i][q] = 1;
+			matchingPairs3[i][q] = 1;
+			matchingPairs4[i][q] = 1;
+		}
 	}
-	attackRound(0, a,b, matchingPairs1, 0);
-	//printMP(matchingPairs1);
-	attackRound(1, a,b, matchingPairs2, 0);
-	attackRound(2, a,b, matchingPairs2, 0);
-	attackRound(3, a,b, matchingPairs2, 0);
 
+
+
+	printf("\n \n NOTE: Instuctions to view individual delta-key pairs found in each round are in test.c ~Line 213 \n");
+	/*Set last param to 1 to see the individual delta-key pairs found in 
+	any round. 
+	*/
+	printf("\n \n Analyzing normal/faulty pair 1:... \n");
+	attackRound(0, a,b, matchingPairs1, 0);
+	attackRound(1, a,b, matchingPairs2, 0);
+	attackRound(2, a,b, matchingPairs3, 0);
+	attackRound(3, a,b, matchingPairs4, 0);
+
+
+	
+	printf("\n \n Analyzing normal/faulty pair 2:... \n");
 	a = n2;
 	b = f2;
-	attackRound(0, a,b, &matchingPairs2, 0);
+	attackRound(0, a,b, &matchingPairs1, 0);
 	attackRound(1, a,b, &matchingPairs2, 0);
-	attackRound(2, a,b, &matchingPairs2, 0);
-	attackRound(3, a,b, &matchingPairs2, 1);
-/*
+	attackRound(2, a,b, &matchingPairs3, 0);
+	attackRound(3, a,b, &matchingPairs4, 0);
+
+
+	printf("\n \n Analyzing normal/faulty pair 3:... \n");
 	a=n3;
 	b=f3;
-	attackRound(0, a,b, &matchingPairs3, 0);
-	attackRound(1, a,b, &matchingPairs3, 0);
+	attackRound(0, a,b, &matchingPairs1, 0);
+	attackRound(1, a,b, &matchingPairs2, 0);
 	attackRound(2, a,b, &matchingPairs3, 0);
-	attackRound(3, a,b, &matchingPairs3, 0);
-*/
-	collectKey(1);
+	attackRound(3, a,b, &matchingPairs4, 0);
+
+
+	printf("\n \n \n \n Checking if delta found matches original... \n \n");
+	//Checking if delta found equals original
+	int numUniqueDeltas = 0;	
+	int deltaFound = -1;
+	for(int i = 0; i<256; i++){
+		if (viableDeltas[i] == 1){
+			 numUniqueDeltas++;
+			 deltaFound = i;
+		}
+	}
+	if (numUniqueDeltas > 1) printf("Error: More than one delta found. \n");
+	else if (deltaFound  == CORRECT_DELTA) {
+		printf("Congrats! The delta found matches the original delta \n injected in fault (specified in aes.h). \n");
+		collectKey(deltaFound, 3);
+	}
+	else printf("Unique delta found, but does not match original delta.");
 	return 1;
 }
 
@@ -257,7 +298,7 @@ static void attackRound(int i, state_t* a, state_t*b, int mp[256][256], int prin
 	}
 	for(int p=0; p<256;p++){
 		for(int q=0; q<256;q++){
-			mp[p][q] = mpUpdate[p][q];
+			mp[p][q] = mpUpdate[p][q]&mp[p][q];
 		}
 	}
 	
