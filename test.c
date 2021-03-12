@@ -36,7 +36,7 @@ int main(){
 	#endif
     	//state_t b = malloc(sizeof(state_t));
 	simulate();
-/*
+
 	state_t normal1 =     {{58, 215, 123, 180},
 				{13,122,54,96},
 				{168,158,202,243},
@@ -61,11 +61,11 @@ int main(){
 	for(int i = 0; i<256; i++){
 		viableDeltas[i] = 1;
 	}
-	attackRoundi(0, a,b, &matchingPairs1, 0);
+	attackRound(0, a,b, &matchingPairs1, 1);
+/*
 	attackRound(1, a,b, &matchingPairs2, 0);
 	attackRound(2, a,b, &matchingPairs2, 0);
 	attackRound(3, a,b, &matchingPairs2, 0);
-
 
 	attackRound(1, a,b, &matchingPairs2, 1);
 	attackRound(1, a,b, &matchingPairs2, 1);
@@ -75,21 +75,30 @@ int main(){
 	return 1;
 }
 
-int findAffected 
 static void attackRound(int i, state_t* a, state_t*b, int** mp, int print){
 	int count = 0;
 	int mpUpdate[256][256];
-	int vdUpdate[256];
+	int vdUpdate[256]; 
+	int affectedRow = 0;
+
+	for(affectedRow = 0; affectedRow < 4; affectedRow++){
+		if ((*a)[affectedRow][i] != (*b)[affectedRow][i]){
+			break;
+		}
+	}
+	int nVal =  (*a)[affectedRow][i]; 
+	int fVal =  (*b)[affectedRow][i]; 
+	printf("Normal val: %d, Faulty Val: %d", nVal, fVal);
 	for(int d = 1; d < 256; d++){
 		if(viableDeltas[d] == 1){
 		state_t* x = dro(d);
-		int drox = (*x)[FAULTROW][i];
+		int drox = (*x)[0][i];
 		//printf("DRO_%i_%i: %i \n", d, i, drox);
 		for(int k = 0; k < 256; k++){
-			int bdrox = bdro(a, b, r, c, k);
+			int bdrox = bdro(a, b, affectedRow, i, k);
 			//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
 			if(bdrox==drox){	
-				if(print) printf("delta:%i, key:%i \n",d,k);
+				if(print) printf("delta:%i, drox: %d,  key:%i, bdrox: %d \n",d,drox, k, bdrox);
 				mpUpdate[d][k] = 1;
 				vdUpdate[d] = 1;
 				count++;

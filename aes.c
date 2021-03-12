@@ -475,13 +475,13 @@ state_t* dro(int delta){
 //  printf("DMI, delta=%i \n", delta);
 // printState(dmi);
   MixColumns(dmi);
-//  printf("DRO \n");
-// printState(dmi);
+  printf("DRO \n");
+   printState(dmi);
   //dro=dmo=mixcolumns(dmi)
   return dmi;
 }
 
-int bdro(state_t* c, state_t* f, int col, int key)
+int bdro(state_t* c, state_t* f, int row, int col, int key)
 {
 /*
   printf("cipher \n");
@@ -490,9 +490,12 @@ int bdro(state_t* c, state_t* f, int col, int key)
   printState(f);
   printf("c0: %i", (*c)[0][0]);
   printf("f0: %i \n",(*f)[0][0]);
-*/
-  int crc = (*c)[r][c]^key;
-  int frc = (*f)[r][c]^key;
+*/ 
+  int cval=  (*c)[row][col];
+  int fval=  (*f)[row][col];
+ // printf("BDRO on Row %d, Col%d, nval %d, fval%d  \n", r,col,cval, fval);
+  int crc = cval^key;
+  int frc = fval^key;
  /* printf("c0_key: %i, f0_key: %i \n", crc, frc);*/
 
   int bdro = getSBoxInvert(crc)^getSBoxInvert(frc);
