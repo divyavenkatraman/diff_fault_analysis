@@ -14,6 +14,7 @@ static void phex(uint8_t* str);
 static int test_encrypt_ecb(int faulty);
 static int test_decrypt_ecb();
 static void attackRound(int i, state_t* a, state_t*b, int mp[256][256], int print);
+//matchingPairs[delta][key]
 int matchingPairs1[256][256]; 
 int matchingPairs2[256][256];
 int matchingPairs3[256][256];
@@ -192,7 +193,7 @@ int main(){
 		viableDeltas[i] = 1;
 	}
 	attackRound(0, a,b, matchingPairs1, 0);
-	printMP(matchingPairs1);
+	//printMP(matchingPairs1);
 	attackRound(1, a,b, matchingPairs2, 0);
 	attackRound(2, a,b, matchingPairs2, 0);
 	attackRound(3, a,b, matchingPairs2, 0);
@@ -202,7 +203,7 @@ int main(){
 	attackRound(0, a,b, &matchingPairs2, 0);
 	attackRound(1, a,b, &matchingPairs2, 0);
 	attackRound(2, a,b, &matchingPairs2, 0);
-	attackRound(3, a,b, &matchingPairs2, 0);
+	attackRound(3, a,b, &matchingPairs2, 1);
 /*
 	a=n3;
 	b=f3;
@@ -216,7 +217,8 @@ int main(){
 }
 
 static void attackRound(int i, state_t* a, state_t*b, int mp[256][256], int print){
-	int count = 0;
+	int countPairs = 0;
+	int countDeltas = 0;
 	int mpUpdate[256][256] = {0};
 	int vdUpdate[256] = {0}; 
 	int affectedRow = 0;
@@ -231,22 +233,24 @@ static void attackRound(int i, state_t* a, state_t*b, int mp[256][256], int prin
 	printf("Normal val: %d, Faulty Val: %d \n", nVal, fVal);
 	for(int d = 1; d < 256; d++){
 		if(viableDeltas[d] == 1){
-		state_t* x = dro(d);
-		int drox = (*x)[0][i];
-		//printf("DRO_%i_%i: %i \n", d, i, drox);
-		for(int k = 0; k < 256; k++){
-			int bdrox = bdro(a, b, affectedRow,i, k);
-			//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
-			if(bdrox==drox){	
-				if(print) 
+			state_t* x = dro(d);
+			int drox = (*x)[0][i];
+			//printf("DRO_%i_%i: %i \n", d, i, drox);
+			for(int k = 0; k < 256; k++){
+				int bdrox = bdro(a, b, affectedRow,i, k);
+				//printf("BDRO_%i_%i: %i \n", k,i,bdrox);
+					if(bdrox==drox){	
+						if(print) 
 				printf("\n delta:%i, key:%i, dro=bdro=%i \n",d, k, bdrox);
-				mpUpdate[d][k] = 1;
-				vdUpdate[d] = 1;
-				count++;
-					
+						mpUpdate[d][k] = 1;
+						if(vdUpdate[d] != 1){
+							vdUpdate[d] = 1;
+							countDeltas++;
+						}
+					countPairs++;
+					}
 			}
 		}
-	}
 	}
 	for(int n=0; n<256;n++){
 		viableDeltas[n] = vdUpdate[n];
@@ -257,7 +261,8 @@ static void attackRound(int i, state_t* a, state_t*b, int mp[256][256], int prin
 		}
 	}
 	
-	printf("For round %d, found %d pairs \n.", i, count);
+	printf("For round %d, found %d matching pairs and %d deltas \n",
+		 i, countPairs, countDeltas);
 }
 
 // prints string as he
