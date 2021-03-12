@@ -13,7 +13,7 @@
 static void phex(uint8_t* str);
 static int test_encrypt_ecb(int faulty);
 static int test_decrypt_ecb();
-static void attackRound(int i, state_t* a, state_t*b, int** mp, int print);
+static void attackRound(int i, state_t* a, state_t*b, int mp[256][256], int print);
 int matchingPairs1[256][256]; 
 int matchingPairs2[256][256];
 int matchingPairs3[256][256];
@@ -29,6 +29,26 @@ state_t* f2;
 state_t* f3;
 state_t* f4;
 
+void collectKey(int delta){
+	int key[4] = {0};
+	for(int i = 0; i<256; i++){
+		if (matchingPairs1[delta][i] == 1) 
+			key[0] = i;
+		if (matchingPairs2[delta][i] == 1)
+			key[1] = i; 
+		if (matchingPairs3[delta][i] == 1) 
+			key[2] = i;
+		if (matchingPairs4[delta][i] == 1) 
+			key[3] = i;
+		if (matchingPairs4[delta][i] == 1) 
+			key[5] = i;
+		
+	}
+	for (int i=0; i<4; i++){
+		printf("i: %d, h: %x \n", key[i], key[i]);
+	}
+
+}
 void simulate(){	
 	test_encrypt_ecb_verbose(0,0,n1);
 	test_encrypt_ecb_verbose(0,1,n2);
@@ -103,6 +123,14 @@ void test_encrypt_ecb_verbose(int faulty, int which, state_t* c)
 	return;
 }
 
+void printMP(int mp[256][256]){
+	for (int i=0; i<256;i++){
+		for(int j=0;j<256;j++){
+			printf("%d ", mp[i][j]);
+		}
+		printf("\n");
+	}
+}
 int main(){
     	int exit;
 
@@ -163,10 +191,11 @@ int main(){
 	for(int i = 0; i<256; i++){
 		viableDeltas[i] = 1;
 	}
-	attackRound(0, a,b, &matchingPairs1, 0);
-	attackRound(1, a,b, &matchingPairs2, 0);
-	attackRound(2, a,b, &matchingPairs2, 0);
-	attackRound(3, a,b, &matchingPairs2, 0);
+	attackRound(0, a,b, matchingPairs1, 0);
+	printMP(matchingPairs1);
+	attackRound(1, a,b, matchingPairs2, 0);
+	attackRound(2, a,b, matchingPairs2, 0);
+	attackRound(3, a,b, matchingPairs2, 0);
 
 	a = n2;
 	b = f2;
@@ -174,17 +203,19 @@ int main(){
 	attackRound(1, a,b, &matchingPairs2, 0);
 	attackRound(2, a,b, &matchingPairs2, 0);
 	attackRound(3, a,b, &matchingPairs2, 0);
-
+/*
 	a=n3;
 	b=f3;
 	attackRound(0, a,b, &matchingPairs3, 0);
 	attackRound(1, a,b, &matchingPairs3, 0);
 	attackRound(2, a,b, &matchingPairs3, 0);
 	attackRound(3, a,b, &matchingPairs3, 0);
+*/
+	collectKey(1);
 	return 1;
 }
 
-static void attackRound(int i, state_t* a, state_t*b, int** mp, int print){
+static void attackRound(int i, state_t* a, state_t*b, int mp[256][256], int print){
 	int count = 0;
 	int mpUpdate[256][256] = {0};
 	int vdUpdate[256] = {0}; 
@@ -220,7 +251,12 @@ static void attackRound(int i, state_t* a, state_t*b, int** mp, int print){
 	for(int n=0; n<256;n++){
 		viableDeltas[n] = vdUpdate[n];
 	}
-	mp = &mpUpdate;
+	for(int p=0; p<256;p++){
+		for(int q=0; q<256;q++){
+			mp[p][q] = mpUpdate[p][q];
+		}
+	}
+	
 	printf("For round %d, found %d pairs \n.", i, count);
 }
 
